@@ -3,6 +3,12 @@
 Reusable Claude Code / agent skills, kept in version control so any session —
 local, cloud, or cowork — can pull them, and so they survive a machine.
 
+> **prodesigneer** — the brand/identity for the operating model these skills
+> embody: a human *director* steering an agent that plays product manager,
+> designer, and engineer, with delivery held to a human-verifiable bar. It names
+> the philosophy, not any one skill file (the mechanism lives in
+> `verified-delivery`).
+
 Each top-level folder is one skill (a `SKILL.md` plus optional `references/` and
 `scripts/`), mirroring the `~/.claude/skills/` layout.
 
