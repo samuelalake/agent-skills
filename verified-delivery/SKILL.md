@@ -2,9 +2,10 @@
 name: verified-delivery
 description: >-
   A complete, repo-agnostic method for turning feedback into tracked, verified, shipped
-  software using GitHub as the single system of record. It stands up a self-maintaining issue
-  hierarchy (root → cores → area epics → issues as native GitHub sub-issues, plus a Lane field
-  and a small label taxonomy), and runs a capture → triage → delegate → verify loop with a
+  software using a readable concern ledger plus GitHub for execution. It stands up a
+  self-maintaining issue hierarchy (root → cores → area epics → issues as native GitHub
+  sub-issues, plus a Lane field and a small label taxonomy), and runs a capture → triage →
+  delegate → verify loop with a
   two-gate verification model: an AI agent drives the real running product and captures
   screenshot evidence, while the human stays a feedback + spot-check gate rather than driving
   every change. Use this whenever the user wants to set up work tracking or a "system of
@@ -53,18 +54,36 @@ It exists to defeat four failure modes that quietly kill AI-assisted projects:
    plan silently stop matching where the product went, and agents pull work that shouldn't be
    built.
 
-The cure runs through everything below: **the durable record lives in GitHub, not chat; "done"
-means an agent drove the real product like a user and left evidence; work lands on the trunk the
-human actually tests; and the record is reconciled to the product's *current* direction, not the
-moment each note was captured.**
+The cure runs through everything below: **the durable record lives in a configured project
+ledger, not chat; actionable execution lives in GitHub; "done" means an agent drove the real
+product like a user and left evidence; work lands on the trunk the human actually tests; and the
+record is reconciled to the product's *current* direction, not the moment each note was captured.**
 
 ## The one rule that makes it work
 
-**If it isn't a GitHub Issue, it isn't tracked.** The instant someone gives feedback, notices a
-bug, or names a gap, it becomes an issue — before anything else, mid-sentence if needed. Chat
-and an agent's private memory both evaporate; an issue persists across sessions, tools (Claude,
-Codex, the human), and crashes. This is the single habit that ends feedback rot. When in doubt,
-file it; a redundant issue costs seconds, a lost one costs a cycle.
+**Capture every continuing concern; create an issue only when it is ready for execution.** Chat
+and an agent's private memory both evaporate, so each continuing concern needs one durable row
+in the project's configured ledger. That ledger may be a document table, project view, repository
+file, or an issue view, but the project names exactly one source of truth. New feedback updates,
+merges into, splits, or supersedes an existing concern by default; it does not automatically
+manufacture another queue item.
+
+Promote a concern to a GitHub Issue when it has a distinct outcome, current evidence, enough
+context to act, and a useful next decision or verification step. GitHub is the execution record:
+issues coordinate actionable work, PRs implement it, and checks carry evidence. This separation
+ends feedback rot without rebuilding it as issue sprawl.
+
+## Where this skill belongs
+
+Verified Delivery is a versioned, general-purpose skill pack. An orchestrator such as
+[Agent Factory](https://github.com/samuelalake/agent-factory) may discover and invoke it for
+stewardship, readiness, delivery, and verification work, but the orchestrator does not replace
+the skill and the skill does not own orchestration.
+
+Each consumer opts into a pinned version and combines it with its repository-local domain
+skills. Keep the canonical skill here rather than maintaining divergent copies in every product.
+The consumer still owns its build commands, protected paths, product decisions, and evidence
+requirements; this skill supplies the reusable operating discipline around them.
 
 ## The structure (set up once, then it maintains itself)
 
@@ -256,10 +275,11 @@ making them *drivable* is the value.
 
 ### Bar 2 — ready to ship (is the output verified?)
 
-This is the **two gates** above: an agent **drove the real product and produced screenshot
-evidence** (Gate 1), and the human **sampled** it (Gate 2). A green test is necessary, never
-sufficient. An output that only passed tests — or bled past its do-not-touch scope — is
-`needs-drive`, not done.
+This is the AI shipping gate above: an independent agent reviewed the current HEAD and another
+pass **drove the real product and produced screenshot evidence**. A green test is necessary,
+never sufficient. An output that only passed tests — or bled past its do-not-touch scope — is
+`needs-drive`, not done. Human sampling audits the system asynchronously after shipping; it does
+not hold every output at this bar.
 
 ## Done means the feature, not the PR
 
@@ -288,10 +308,11 @@ closed but which was never driven end-to-end is `needs-drive` at the feature lev
 
 ## The operating loop
 
-1. **Capture** — feedback → a labeled issue, instantly, linked into the hierarchy.
-2. **Triage** — set type/area labels + Lane so it lands in the right group. New auto-added
-   issues arrive unlabeled; labeling on arrival is the triage step.
-3. **Delegate** — hand well-scoped, *decided* issues to sub-agents. Each works in a disposable
+1. **Capture** — feedback updates one durable concern in the configured ledger. Merge repeated
+   symptoms and preserve the latest evidence rather than creating one record per message.
+2. **Triage** — transform a distinct, actionable concern into an issue; then set type/area labels
+   and Lane so it lands in the right group. Unready concerns remain visible in the ledger.
+3. **Delegate** — hand well-scoped, *decided* issues to agents. Each works in a disposable
    worktree, builds, adds tests, **pushes on the first commit**, opens a PR that says `Closes #N`
    (or `Part of #N` for a slice), and leaves it `needs-drive`. Sequence agents that touch the
    same hot files (a monolithic component, a shared adapter) — concurrent edits there manufacture
@@ -302,10 +323,12 @@ closed but which was never driven end-to-end is `needs-drive` at the feature lev
    retire the worktree. Not green → name the wall; it stays `needs-drive`, unmerged.
 5. **Human sampling (async)** — the owner spot-checks evidence when they want and, in voice/drive
    sessions, tests several shipped things *together* — the check per-PR gates can't do. What they
-   find becomes new issues, not a merge they were blocking.
+   find updates the ledger and is promoted to an issue when it clears the readiness bar; it does
+   not retroactively become a merge they were blocking.
 
-Feedback compounds: one shipped feature typically surfaces two or three *new* real gaps while
-being driven — each becomes a sub-issue, so the backlog fills itself with true work.
+Feedback compounds: one shipped feature may surface several real gaps while being driven. Each
+updates the project narrative; the actionable subset becomes sub-issues, so the backlog grows
+from true work rather than raw message volume.
 
 ## Deliver in parallel by default
 
@@ -407,9 +430,9 @@ it the moment its PR merges.
 
 ## Keep issues honest as direction changes (issue rot)
 
-Capture is instant, but product direction *moves* across sessions — and issues filed under an old
-plan quietly become wrong. A backlog full of stale issues is its own tar pit: agents pull work
-that shouldn't be built anymore. The record needs **upkeep, not just appends**:
+Ledger capture is instant, but product direction *moves* across sessions — and issues filed under
+an old plan quietly become wrong. A backlog full of stale issues is its own tar pit: agents pull
+work that shouldn't be built anymore. The record needs **upkeep, not just appends**:
 
 - **Reconcile, don't just accrue.** Periodically — and whenever a decision changes direction —
   sweep open issues for ones that now contradict where the product went. An AI can and should do

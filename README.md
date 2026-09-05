@@ -1,6 +1,6 @@
 # agent-skills
 
-Reusable Claude Code / agent skills, kept in version control so any session —
+Reusable, model-agnostic agent skills, kept in version control so any session —
 local, cloud, or cowork — can pull them, and so they survive a machine.
 
 > **prodesigneer** — the brand/identity for the operating model these skills
@@ -15,7 +15,8 @@ Each top-level folder is one skill (a `SKILL.md` plus optional `references/` and
 ## Skills
 
 - **verified-delivery** — a repo-agnostic method for turning feedback into
-  tracked, verified, shipped software using GitHub as the single system of record:
+  tracked, verified, shipped software using a readable concern ledger and GitHub as the
+  execution record:
   a self-maintaining issue hierarchy (root → cores → epics → issues as native
   sub-issues, plus Lane field + label taxonomy) and a capture → triage → delegate
   → verify loop with two gates — an agent drives the real running product and
@@ -34,4 +35,6 @@ ln -s "$PWD/verified-delivery" ~/.claude/skills/verified-delivery
 cp -R verified-delivery ~/.claude/skills/
 ```
 
-Then invoke it in Claude Code as `/verified-delivery`.
+Then invoke it in Claude Code as `/verified-delivery`. Orchestrators such as
+[Agent Factory](https://github.com/samuelalake/agent-factory) can select the same pinned skill
+alongside a consumer repository's domain-specific skills.
