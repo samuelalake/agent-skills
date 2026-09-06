@@ -21,14 +21,18 @@ Each top-level folder is one skill (a `SKILL.md` plus optional `references/` and
   → verify loop with two gates — an agent drives the real running product and
   captures screenshot evidence, while the human stays a feedback + spot-check gate
   rather than driving every change.
+- **lucide-icon-contribution** — prepares icons for the upstream Lucide library:
+  research current prior art, convert raw SVGs into Lucide geometry, validate
+  spacing and rendering, lint in Lucide Studio, and write reviewable draft PRs.
 
 ## Install
 
 Copy or symlink a skill into your Claude skills directory:
 
 ```bash
-# symlink (edits here take effect live)
+# symlink one skill (edits here take effect live)
 ln -s "$PWD/verified-delivery" ~/.claude/skills/verified-delivery
+ln -s "$PWD/lucide-icon-contribution" ~/.claude/skills/lucide-icon-contribution
 
 # or copy
 cp -R verified-delivery ~/.claude/skills/
