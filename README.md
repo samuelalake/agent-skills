@@ -21,6 +21,11 @@ Each top-level folder is one skill (a `SKILL.md` plus optional `references/` and
   → verify loop with two gates — an agent drives the real running product and
   captures screenshot evidence, while the human stays a feedback + spot-check gate
   rather than driving every change.
+- **product-design-delivery** — turns a user-facing concern into an approved,
+  implementable design contract grounded in the adopting product's real design
+  system. It distinguishes reproduction, extension, new design, and system work;
+  blocks Build only when material design choices remain unresolved; and defines
+  the evidence Builder and Reviewer need for a faithful delivery.
 
 ## Install
 
@@ -29,9 +34,11 @@ Copy or symlink a skill into your Claude skills directory:
 ```bash
 # symlink (edits here take effect live)
 ln -s "$PWD/verified-delivery" ~/.claude/skills/verified-delivery
+ln -s "$PWD/product-design-delivery" ~/.claude/skills/product-design-delivery
 
 # or copy
 cp -R verified-delivery ~/.claude/skills/
 ```
 
-Then invoke it in Claude Code as `/verified-delivery`.
+Then invoke a skill in Claude Code by name, such as `/verified-delivery` or
+`/product-design-delivery`.
