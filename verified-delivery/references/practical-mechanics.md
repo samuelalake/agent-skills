@@ -22,6 +22,24 @@ UI — but never claim visual proof you didn't upload. **Capturing ≠ examining
 every screenshot against the intent and say what a user sees; a shot that contradicts
 "done" blocks the merge.
 
+### Multiple images → a table, not a stack
+
+When an issue or PR carries **more than one** image — reference frames per screen, or
+drive-verify shots per state — lay them out in a Markdown **table**, not a vertical stack
+of full-height frames. A stack of phone screenshots buries the prose and is unskimmable;
+a table lets a reader scan the labels down the first column and glance right for the shot.
+One row per screen/state, label in column one, image in column two:
+
+```markdown
+| Screen / state | Reference |
+|---|---|
+| Sign-in — returning user | ![sign-in](<url>) |
+| Consent | ![consent](<url>) |
+```
+
+Always label what each shot *is* — the reader scans the column, not the pixels. The same
+table serves reference frames in a design-ready issue and evidence in a delivery PR.
+
 ## Projects: fields are better than labels for anything single-valued
 
 Labels are flat strings you can filter by. **Single-select / number FIELDS** can be
