@@ -116,6 +116,10 @@ reachable implementation; mark it Proposed or Review until reconciled.
 Compare sibling-state renders before completion and verify component identity,
 icon variant, divider ownership, and action semantics remain consistent; an
 overlay must not fork the construction of the unchanged rows beneath it.
+When optional content is hidden or removed, remeasure every ancestor that
+reserved its size. Restore hug behavior, recompute adjacent positions and
+anchor gaps, and render the complete component state; changing visibility alone
+does not prove the layout collapsed correctly.
 
 For settings-style products, separate the scrolling container from the
 sections it contains. The platform settings list owns the viewport background,
