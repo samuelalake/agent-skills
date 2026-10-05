@@ -106,6 +106,31 @@ Treat motion as behavior: specify trigger, transition, continuity, completion,
 interruption, and reduced-motion behavior where relevant. Treat accessibility
 and platform conventions as part of the design rather than post-build cleanup.
 
+When the same surface appears in multiple screens, represent its meaningful
+states in the owning component family instead of assembling each occurrence
+independently. Update the component first, then use its instances so icons,
+menus, dividers, spacing, and interaction roles stay consistent across every
+consumer. A screen that resembles code visually is not Aligned when its
+component anatomy, available actions, or interaction semantics differ from the
+reachable implementation; mark it Proposed or Review until reconciled.
+
+For settings-style products, separate the scrolling container from the
+sections it contains. The platform settings list owns the viewport background,
+body inset, scrolling, and spacing between sections. A Section owns only its
+header, rows, footer, fill, and internal dividers. A single-row section still
+uses Section and has no internal divider. Do not encode inter-section spacing
+as a Section variant when it belongs to the parent list or stack.
+
+For destructive sheets or overlays, verify the presented state and the content
+behind it. The underlying screen must preserve the intended scroll position,
+the action must remain reachable at supported heights and text sizes, and the
+overlay must not create a second non-scrolling reconstruction of the body.
+
+Name permissions for the authority they actually grant. Distinguish protocol
+or operator scopes, product capabilities, and operating-system data
+permissions. Do not present a technical Read or Write scope as blanket access
+to user data unless the runtime contract establishes that meaning.
+
 Choose tools by the durable outcome:
 
 - use a fast design canvas or interactive prototype to explore and gain
@@ -160,6 +185,14 @@ smaller.
 Render and visually inspect the completed topology. Check that screen labels,
 status labels, connector labels, source-to-destination direction, branch
 spines, and local grouping remain legible at normal review zoom.
+
+Derive screen status from evidence. Trace the current reachable navigation and
+state graph before labeling a screen: use Aligned only for a composition that
+matches reachable code and canonical components, Proposed for a deliberate new
+direction, Review when evidence conflicts or is incomplete, and Deprecated for
+an intentionally retained obsolete state. Pair each topology screen with a
+short source note naming the current implementation file or explaining that it
+spans several files or has no implementation yet.
 
 ## Produce a design-ready task
 
