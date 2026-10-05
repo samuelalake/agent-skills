@@ -127,14 +127,18 @@ because connectors compete with the screen compositions, move the navigation
 topology to FigJam while keeping the design file as the visual source of
 truth.
 
-The FigJam map must use the actual canonical screen render or instance for
-every referenced state. Abstract boxes may appear only as an optional compact
-overview or legend; they do not replace the screen map. Use native, visibly
-labeled connectors. When one source fans out to multiple destinations, route
-the connections through a shared branch spine, then keep each destination's
-local flow close to that screen. Cluster related routes by product domain and
-show each screen's lifecycle status, such as Aligned, Proposed, Review, or
-Deprecated.
+The FigJam map must use the actual canonical screen for every referenced
+state. Prefer copying editable component instances from Figma Design so layers,
+component relationships, and overrides remain available in FigJam and the
+same element can move back to Design. Use raster renders only when editable
+transfer is unavailable or when the image is intentionally evidence rather
+than a working design artifact. Abstract boxes may appear only as an optional
+compact overview or legend; they do not replace the screen map. Use native,
+visibly labeled connectors. When one source fans out to multiple destinations,
+route the connections through a shared branch spine, then keep each
+destination's local flow close to that screen. Cluster related routes by
+product domain and show each screen's lifecycle status, such as Aligned,
+Proposed, Review, or Deprecated.
 
 Render and visually inspect the completed topology. Check that screen labels,
 status labels, connector labels, source-to-destination direction, branch
