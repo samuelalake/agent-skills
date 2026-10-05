@@ -128,6 +128,12 @@ header, rows, footer, fill, and internal dividers. A single-row section still
 uses Section and has no internal divider. Do not encode inter-section spacing
 as a Section variant when it belongs to the parent list or stack.
 
+Every row separator must come from the canonical ListRow divider property.
+Enable the divider only on nonterminal rows and disable it on the final row in
+each Section. Do not add, preserve, or hide independent rectangle or line
+layers to simulate this behavior; correct the owning ListRow instance and
+verify the rendered Section instead.
+
 For destructive sheets or overlays, verify the presented state and the content
 behind it. The underlying screen must preserve the intended scroll position,
 the action must remain reachable at supported heights and text sizes, and the
@@ -189,6 +195,14 @@ route the connections through a shared branch spine, then keep each
 destination's local flow close to that screen. Cluster related routes by
 product domain and show each screen's lifecycle status, such as Aligned,
 Proposed, Review, or Deprecated.
+
+For a vertical screen hierarchy, attach each connector to the source's BOTTOM
+magnet and the destination's TOP magnet. In the Figma prototype overview,
+attach to the top-level screen instance. In FigJam, attach to the outer
+annotated screen group so its label, screen, and source note move together.
+Do not leave these endpoints on AUTO or side magnets. Keep upstream app-shell
+navigation outside a settings topology unless that entry path is explicitly
+part of the audit.
 
 Keep the screen's own viewport background and safe-area chrome intact; blank
 space inside that viewport is part of the screen, not a FigJam wrapper to
