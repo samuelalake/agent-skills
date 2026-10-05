@@ -116,6 +116,12 @@ reachable implementation; mark it Proposed or Review until reconciled.
 Compare sibling-state renders before completion and verify component identity,
 icon variant, divider ownership, and action semantics remain consistent; an
 overlay must not fork the construction of the unchanged rows beneath it.
+Component identity alone does not prove visual compliance. Inspect the rendered
+appearance of the selected variant and its properties. If the requirement is a
+visible container, background, state, or affordance, a nested instance with the
+right component name still fails when those pixels are absent. Resolve conflicts
+in favor of the approved rendered reference, then verify the full screen at a
+readable scale.
 When optional content is hidden or removed, remeasure every ancestor that
 reserved its size. Restore hug behavior, recompute adjacent positions and
 anchor gaps, and render the complete component state; changing visibility alone
