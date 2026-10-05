@@ -127,6 +127,16 @@ because connectors compete with the screen compositions, move the navigation
 topology to FigJam while keeping the design file as the visual source of
 truth.
 
+Treat this as one canonical source and one synchronized projection, not two
+equal design authorities. Figma Design owns screen composition and component
+masters; FigJam owns route topology, connector labels, and flow grouping.
+Changes to a main component flow from Design to its linked FigJam instances.
+A change made directly to a FigJam instance is an override or proposal until
+it is deliberately promoted back into the canonical Design component. If a
+Figma-side flow presentation is also useful, compose it from the same
+canonical instances rather than round-tripping the entire FigJam board into a
+second independently editable screen set.
+
 The FigJam map must use the actual canonical screen for every referenced
 state. Prefer copying editable component instances from Figma Design so layers,
 component relationships, and overrides remain available in FigJam and the
@@ -139,6 +149,13 @@ route the connections through a shared branch spine, then keep each
 destination's local flow close to that screen. Cluster related routes by
 product domain and show each screen's lifecycle status, such as Aligned,
 Proposed, Review, or Deprecated.
+
+Keep the screen's own viewport background and safe-area chrome intact; blank
+space inside that viewport is part of the screen, not a FigJam wrapper to
+remove. Scale every screen with one uniform proportional scale and verify the
+resulting dimensions after paste or component resolution. Do not use ordinary
+resize behavior that reflows the internal layout merely to make the topology
+smaller.
 
 Render and visually inspect the completed topology. Check that screen labels,
 status labels, connector labels, source-to-destination direction, branch
