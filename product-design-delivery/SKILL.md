@@ -113,6 +113,9 @@ menus, dividers, spacing, and interaction roles stay consistent across every
 consumer. A screen that resembles code visually is not Aligned when its
 component anatomy, available actions, or interaction semantics differ from the
 reachable implementation; mark it Proposed or Review until reconciled.
+Compare sibling-state renders before completion and verify component identity,
+icon variant, divider ownership, and action semantics remain consistent; an
+overlay must not fork the construction of the unchanged rows beneath it.
 
 For settings-style products, separate the scrolling container from the
 sections it contains. The platform settings list owns the viewport background,
@@ -161,6 +164,14 @@ it is deliberately promoted back into the canonical Design component. If a
 Figma-side flow presentation is also useful, compose it from the same
 canonical instances rather than round-tripping the entire FigJam board into a
 second independently editable screen set.
+
+When interactive flow review is required, keep three coordinated layers: the
+canonical Screen components, a flat Figma prototype overview made from linked
+top-level instances and their interactions, and a FigJam topology made from
+linked instances plus status, source notes, routes, and research. Edit masters
+in place so both projections update. If a new master replaces one, swap the
+linked instance in both projections while preserving their surrounding groups
+and connectors. Archive raster maps instead of using them as a live source.
 
 The FigJam map must use the actual canonical screen for every referenced
 state. Prefer copying editable component instances from Figma Design so layers,
