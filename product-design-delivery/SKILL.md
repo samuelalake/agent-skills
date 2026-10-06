@@ -93,9 +93,62 @@ their implemented states rather than relying only on a catalog thumbnail.
 Account for relevant empty, loading, error, success, disabled, selected,
 permission, interruption, and recovery states.
 
+Before drawing a new screen element, inventory the product's canonical
+components and try to compose the result from their existing variants and
+slots. If the system is missing a necessary state or slot, prefer a coherent
+extension of the owning component family and then use its instance. A local
+custom construction is a last resort, and a hand-drawn imitation of an
+existing component is not an acceptable final artifact. Preserve already
+approved screen structure while extending it; do not rebuild unrelated areas
+from scratch.
+
 Treat motion as behavior: specify trigger, transition, continuity, completion,
 interruption, and reduced-motion behavior where relevant. Treat accessibility
 and platform conventions as part of the design rather than post-build cleanup.
+
+When the same surface appears in multiple screens, represent its meaningful
+states in the owning component family instead of assembling each occurrence
+independently. Update the component first, then use its instances so icons,
+menus, dividers, spacing, and interaction roles stay consistent across every
+consumer. A screen that resembles code visually is not Aligned when its
+component anatomy, available actions, or interaction semantics differ from the
+reachable implementation; mark it Proposed or Review until reconciled.
+Compare sibling-state renders before completion and verify component identity,
+icon variant, divider ownership, and action semantics remain consistent; an
+overlay must not fork the construction of the unchanged rows beneath it.
+Component identity alone does not prove visual compliance. Inspect the rendered
+appearance of the selected variant and its properties. If the requirement is a
+visible container, background, state, or affordance, a nested instance with the
+right component name still fails when those pixels are absent. Resolve conflicts
+in favor of the approved rendered reference, then verify the full screen at a
+readable scale.
+When optional content is hidden or removed, remeasure every ancestor that
+reserved its size. Restore hug behavior, recompute adjacent positions and
+anchor gaps, and render the complete component state; changing visibility alone
+does not prove the layout collapsed correctly.
+
+For settings-style products, separate the scrolling container from the
+sections it contains. The platform settings list owns the viewport background,
+body inset, scrolling, and spacing between sections. A Section owns only its
+header, rows, footer, fill, and internal dividers. A single-row section still
+uses Section and has no internal divider. Do not encode inter-section spacing
+as a Section variant when it belongs to the parent list or stack.
+
+Every row separator must come from the canonical ListRow divider property.
+Enable the divider only on nonterminal rows and disable it on the final row in
+each Section. Do not add, preserve, or hide independent rectangle or line
+layers to simulate this behavior; correct the owning ListRow instance and
+verify the rendered Section instead.
+
+For destructive sheets or overlays, verify the presented state and the content
+behind it. The underlying screen must preserve the intended scroll position,
+the action must remain reachable at supported heights and text sizes, and the
+overlay must not create a second non-scrolling reconstruction of the body.
+
+Name permissions for the authority they actually grant. Distinguish protocol
+or operator scopes, product capabilities, and operating-system data
+permissions. Do not present a technical Read or Write scope as blanket access
+to user data unless the runtime contract establishes that meaning.
 
 Choose tools by the durable outcome:
 
@@ -109,6 +162,72 @@ Choose tools by the durable outcome:
 
 Do not translate an approved artifact into another tool merely to satisfy a
 preferred workflow. Record where the authoritative result lives.
+
+## Map screen topology without obscuring the screens
+
+Keep canonical editable screens and their component structure in the
+product's design file. When a multi-screen flow becomes difficult to read
+because connectors compete with the screen compositions, move the navigation
+topology to FigJam while keeping the design file as the visual source of
+truth.
+
+Treat this as one canonical source and one synchronized projection, not two
+equal design authorities. Figma Design owns screen composition and component
+masters; FigJam owns route topology, connector labels, and flow grouping.
+Changes to a main component flow from Design to its linked FigJam instances.
+A change made directly to a FigJam instance is an override or proposal until
+it is deliberately promoted back into the canonical Design component. If a
+Figma-side flow presentation is also useful, compose it from the same
+canonical instances rather than round-tripping the entire FigJam board into a
+second independently editable screen set.
+
+When interactive flow review is required, keep three coordinated layers: the
+canonical Screen components, a flat Figma prototype overview made from linked
+top-level instances and their interactions, and a FigJam topology made from
+linked instances plus status, source notes, routes, and research. Edit masters
+in place so both projections update. If a new master replaces one, swap the
+linked instance in both projections while preserving their surrounding groups
+and connectors. Archive raster maps instead of using them as a live source.
+
+The FigJam map must use the actual canonical screen for every referenced
+state. Prefer copying editable component instances from Figma Design so layers,
+component relationships, and overrides remain available in FigJam and the
+same element can move back to Design. Use raster renders only when editable
+transfer is unavailable or when the image is intentionally evidence rather
+than a working design artifact. Abstract boxes may appear only as an optional
+compact overview or legend; they do not replace the screen map. Use native,
+visibly labeled connectors. When one source fans out to multiple destinations,
+route the connections through a shared branch spine, then keep each
+destination's local flow close to that screen. Cluster related routes by
+product domain and show each screen's lifecycle status, such as Aligned,
+Proposed, Review, or Deprecated.
+
+For a vertical screen hierarchy, attach each connector to the source's BOTTOM
+magnet and the destination's TOP magnet. In the Figma prototype overview,
+attach to the top-level screen instance. In FigJam, attach to the outer
+annotated screen group so its label, screen, and source note move together.
+Do not leave these endpoints on AUTO or side magnets. Keep upstream app-shell
+navigation outside a settings topology unless that entry path is explicitly
+part of the audit.
+
+Keep the screen's own viewport background and safe-area chrome intact; blank
+space inside that viewport is part of the screen, not a FigJam wrapper to
+remove. Scale every screen with one uniform proportional scale and verify the
+resulting dimensions after paste or component resolution. Do not use ordinary
+resize behavior that reflows the internal layout merely to make the topology
+smaller.
+
+Render and visually inspect the completed topology. Check that screen labels,
+status labels, connector labels, source-to-destination direction, branch
+spines, and local grouping remain legible at normal review zoom.
+
+Derive screen status from evidence. Trace the current reachable navigation and
+state graph before labeling a screen: use Aligned only for a composition that
+matches reachable code and canonical components, Proposed for a deliberate new
+direction, Review when evidence conflicts or is incomplete, and Deprecated for
+an intentionally retained obsolete state. Pair each topology screen with a
+short source note naming the current implementation file or explaining that it
+spans several files or has no implementation yet.
 
 ## Produce a design-ready task
 
