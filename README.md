@@ -27,6 +27,13 @@ Each top-level folder is one skill (a `SKILL.md` plus optional `references/` and
   blocks Build only when material design choices remain unresolved; and defines
   the evidence Builder and Reviewer need for a faithful delivery.
 
+- **review-pages** — review pages that compare an app's expected flows with what
+  it actually does on device: a flow board of device-test recordings and flow
+  prototypes that autoplay each flow on every platform, sharing one Primer-based
+  layout and a machine-readable expected-path format (`paths/<flow>.json`). The
+  prototypes are product-design-delivery's contract; the board is
+  verified-delivery's evidence.
+
 ## Install
 
 Copy or symlink a skill into your Claude skills directory:
@@ -35,6 +42,7 @@ Copy or symlink a skill into your Claude skills directory:
 # symlink (edits here take effect live)
 ln -s "$PWD/verified-delivery" ~/.claude/skills/verified-delivery
 ln -s "$PWD/product-design-delivery" ~/.claude/skills/product-design-delivery
+ln -s "$PWD/review-pages" ~/.claude/skills/review-pages
 
 # or copy
 cp -R verified-delivery ~/.claude/skills/

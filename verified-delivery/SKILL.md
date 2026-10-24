@@ -189,6 +189,8 @@ Rules that keep it honest:
 - See `references/verification.md` for the driving technique (including firing real pointer
   events, which many component libraries need and plain synthetic clicks miss).
 
+For apps with device tests, a flow board that shows each flow's recording next to its expected run makes Gate 1's evidence easy to sample: see the `review-pages` skill.
+
 ### Gate 2 — the human async sampling + feedback gate
 
 This runs *after* and *alongside* shipping, never in front of it. The human drives when they

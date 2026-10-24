@@ -1,0 +1,80 @@
+{
+ "flow": "sign-in",
+ "steps": [
+  {
+   "n": 1,
+   "platform": "both",
+   "action": "assert",
+   "target": {
+    "id": "welcome"
+   },
+   "expect": "Welcome with “Continue with email”.",
+   "step": "welcome"
+  },
+  {
+   "n": 2,
+   "platform": "both",
+   "action": "tap",
+   "target": {
+    "id": "welcome.email"
+   },
+   "expect": "The email screen opens with an empty field.",
+   "step": "email"
+  },
+  {
+   "n": 3,
+   "platform": "both",
+   "action": "type",
+   "target": {
+    "id": "signin.field"
+   },
+   "value": "sam@example.com",
+   "expect": "The address appears in the field.",
+   "step": "email"
+  },
+  {
+   "n": 4,
+   "platform": "both",
+   "action": "tap",
+   "target": {
+    "id": "signin.continue"
+   },
+   "expect": "Tasks opens with an empty list and an add control.",
+   "step": "home"
+  },
+  {
+   "n": 1,
+   "platform": "both",
+   "action": "tap",
+   "target": {
+    "id": "welcome.email"
+   },
+   "expect": "The email screen opens.",
+   "step": "email",
+   "edge": "invalid-email"
+  },
+  {
+   "n": 2,
+   "platform": "both",
+   "action": "type",
+   "target": {
+    "id": "signin.field"
+   },
+   "value": "sam@example",
+   "expect": "The address appears in the field.",
+   "step": "email",
+   "edge": "invalid-email"
+  },
+  {
+   "n": 3,
+   "platform": "both",
+   "action": "tap",
+   "target": {
+    "id": "signin.continue"
+   },
+   "expect": "“Enter a full email address.” shows under the field; the screen stays.",
+   "step": "error",
+   "edge": "invalid-email"
+  }
+ ]
+}

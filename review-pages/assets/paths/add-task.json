@@ -1,0 +1,67 @@
+{
+ "flow": "add-task",
+ "given": "Signed in, empty list.",
+ "steps": [
+  {
+   "n": 1,
+   "platform": "both",
+   "action": "assert",
+   "target": {
+    "id": "home"
+   },
+   "expect": "Tasks with an empty list.",
+   "step": "home"
+  },
+  {
+   "n": 2,
+   "platform": "ios",
+   "action": "tap",
+   "target": {
+    "id": "home.add"
+   },
+   "expect": "The New task sheet opens with the field focused.",
+   "step": "sheet"
+  },
+  {
+   "n": 2,
+   "platform": "android",
+   "action": "tap",
+   "target": {
+    "id": "home.fab"
+   },
+   "expect": "The New task sheet opens with the field focused.",
+   "step": "sheet"
+  },
+  {
+   "n": 3,
+   "platform": "both",
+   "action": "type",
+   "target": {
+    "id": "task.field"
+   },
+   "value": "Buy milk",
+   "expect": "“Buy milk” appears in the field.",
+   "step": "sheet"
+  },
+  {
+   "n": 4,
+   "platform": "both",
+   "action": "tap",
+   "target": {
+    "id": "task.save"
+   },
+   "expect": "The sheet closes and a toast says “Task added”.",
+   "step": "saved"
+  },
+  {
+   "n": 5,
+   "platform": "both",
+   "action": "assert",
+   "target": {
+    "text": "Buy milk"
+   },
+   "expect": "“Buy milk” is the first row.",
+   "step": "saved"
+  }
+ ]
+}
