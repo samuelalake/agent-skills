@@ -5,7 +5,7 @@ description: Build and keep review pages that compare an app's expected flows wi
 
 # Review pages: the flow-board pattern
 
-**Version 1.2** · see [CHANGELOG.md](CHANGELOG.md) · worked example: [assets/example.html](assets/example.html) (open it in a browser), with its expected paths in [assets/paths/](assets/paths/)
+**Version 1.3** · see [CHANGELOG.md](CHANGELOG.md) · worked example: [assets/example.html](assets/example.html) (open it in a browser), with its expected paths in [assets/paths/](assets/paths/)
 
 ![The example page: flow sidebar, iOS and Android phones side by side, step rail](assets/example.png)
 
@@ -66,7 +66,7 @@ Each prototype writes `paths/<flow>.json`, the path a test agent is expected to 
 
 - `action` is one of `tap`, `type`, `wait` or `assert`.
 - `target.id` is the platform's real test id. If no id exists, use `target.text`.
-- `platform` is `both`, `ios` or `android`. When the platforms differ, write one entry per platform with the same `n`.
+- `platform` is one of the project's platform ids (see Platforms below), `all` for every platform the flow runs on, or `both` for `ios` and `android` together. When the platforms differ, write one entry per platform with the same `n`.
 - Optional fields:
   - `value` for `type`;
   - `edge` for an error or edge branch;
@@ -74,6 +74,16 @@ Each prototype writes `paths/<flow>.json`, the path a test agent is expected to 
   - `unconfirmed: true` when the id or behaviour hasn't been checked against the app yet.
 
 Device-test flows can be checked against these files: the test should tap the same targets in the same order and assert the same `expect` lines.
+
+### Platforms (1.3)
+
+Platforms are a list, not a fixed pair. A project with a web app, a tablet layout or a watch adds them without forking the pattern.
+
+- **Declaring them:** the project declares its platforms once, next to its flow list, in display order: `{ "id": "web", "title": "Web, phone", "size": "390 × 844 px" }`. Common ids are `ios`, `android`, `web` and `desktop`. Each id names one screen shape: the web at phone width and at desktop width are two platforms.
+- **Per flow:** each flow names the platforms it runs on, and a flow that only exists on the web lists only `web` and `desktop`. The board shows one card per listed platform. Tallies, "Recorded in" and the pull-request rows count and name only those platforms (short names, such as "Android" or "Web", with "All" when every platform is meant).
+- **The media box:** it has one well per listed platform, every well scaled to the same height. A wide screen (desktop) letterboxes inside its well instead of stretching the row. The switch in the title row offers Side by side plus each listed platform.
+- **Paths:** a path may carry a top-level `platforms` list, which defaults to `["ios", "android"]`. Steps can use any of those ids, or `all`. `both` keeps its 1.2 meaning, `ios` and `android`, so 1.2 paths stay valid.
+- **Adopting:** this is optional for a two-platform project. Its pages behave exactly as in 1.2.
 
 ### Optional path fields (1.2)
 
