@@ -335,7 +335,9 @@ button { font: inherit; color: inherit; }
   var NOT = [{ name: 'Settings' }];   // listed, not prototyped yet
   var GROUPS = { 'Sign in': 'Sign in or create an account, including what happens when the email is wrong.', Tasks: 'Add tasks and tick them off.' };
   var group = null;   // the parent page shown, or null when a flow is shown
-  var P = ['android', 'ios'], cur = 0, at = 0, timer = null, speed = 1, open = { Tasks: true, 'Sign in': true };
+  // Platforms are a list (1.3): one per card in the media box, in display order.
+  var NAME = {}; [].forEach.call(document.querySelectorAll('.card[data-p]'), function (c) { NAME[c.getAttribute('data-p')] = c.querySelector('.card-h').firstChild.textContent.trim(); });
+  var P = [].map.call(document.querySelectorAll('.card[data-p]'), function (c) { return c.getAttribute('data-p'); }), cur = 0, at = 0, timer = null, speed = 1, open = { Tasks: true, 'Sign in': true };
   var ICON = {
     proto: '<svg class="ico proto" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.6 5.4v5.2L10.6 8z" fill="currentColor"/></svg>',
     chev: function (o) { return '<svg class="chev' + (o ? ' open' : '') + '" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
@@ -370,7 +372,7 @@ button { font: inherit; color: inherit; }
 
   function F() { return FLOWS[cur]; }
   function ns() { return F().steps.map(function (e) { return e.n; }).filter(function (n, i, a) { return a.indexOf(n) === i; }); }
-  function entry(n, p) { return F().steps.filter(function (e) { return e.n === n && (e.platform === 'both' || e.platform === p); })[0]; }
+  function entry(n, p) { return F().steps.filter(function (e) { return e.n === n && (e.platform === p || e.platform === 'all' || (e.platform === 'both' && (p === 'ios' || p === 'android'))); })[0]; }
   var state = {};
   function goto(k) {
     at = Math.max(0, Math.min(k, ns().length));
@@ -390,7 +392,7 @@ button { font: inherit; color: inherit; }
     if (at >= list.length) { stop('Finished.'); return; }
     var n = list[at];
     P.forEach(function (p) { var e = entry(n, p); if (e) touch(p, e); });
-    status(entry(n, 'ios').expect);
+    status(entry(n, P[P.length - 1]).expect);
     setTimeout(function () { goto(at + 1); }, 450 / speed);
     timer = setTimeout(step, 1500 / speed);
   }
@@ -407,16 +409,16 @@ button { font: inherit; color: inherit; }
     var dots = $('dots'); dots.innerHTML = '';
     list.forEach(function (n, i) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'sdot' + (i < at - 1 ? ' done' : i === at - 1 ? ' on' : '');
-      b.setAttribute('aria-label', 'Step ' + n); b.onclick = function () { stop(); goto(i + 1); status(entry(n, 'ios').expect); };
+      b.setAttribute('aria-label', 'Step ' + n); b.onclick = function () { stop(); goto(i + 1); status(entry(n, P[P.length - 1]).expect); };
       dots.appendChild(b);
     });
     var seen = {}, steps = $('steps'); steps.innerHTML = '';
     list.forEach(function (n) {
-      var e = entry(n, 'ios'); if (seen[e.step]) return; seen[e.step] = true;
-      var idx = list.map(function (m) { return entry(m, 'ios').step; }), first = idx.indexOf(e.step), last = idx.lastIndexOf(e.step);
+      var e = entry(n, P[P.length - 1]); if (seen[e.step]) return; seen[e.step] = true;
+      var idx = list.map(function (m) { return entry(m, P[P.length - 1]).step; }), first = idx.indexOf(e.step), last = idx.lastIndexOf(e.step);
       var li = document.createElement('li');
       li.className = at - 1 >= first && at - 1 <= last ? 'on' : (at - 1 > last ? 'done' : '');
-      li.innerHTML = '<span class="sn">' + esc(f.names[e.step]) + '</span><span class="see">' + esc(entry(list[last], 'ios').expect) + '</span>';
+      li.innerHTML = '<span class="sn">' + esc(f.names[e.step]) + '</span><span class="see">' + esc(entry(list[last], P[P.length - 1]).expect) + '</span>';
       li.onclick = function () { stop(); goto(first + 1); status('Jumped to “' + f.names[e.step] + '”.'); };
       steps.appendChild(li);
     });
@@ -426,7 +428,7 @@ button { font: inherit; color: inherit; }
     f.steps.forEach(function (e) {
       var li = document.createElement('li'); if (e.n === list[at - 1]) li.className = 'on';
       var t = e.target.id ? '<code>' + esc(e.target.id) + '</code>' : '“' + esc(e.target.text) + '”';
-      li.innerHTML = '<span class="pn">' + e.n + '</span><span class="pb"><span class="pa">' + e.action + '</span> ' + t + (e.value ? ' = “' + esc(e.value) + '”' : '') + (e.platform !== 'both' ? ' <span class="plat">' + (e.platform === 'ios' ? 'iOS' : 'Android') + '</span>' : '') + '<span class="exp">' + esc(e.expect) + '</span></span>';
+      li.innerHTML = '<span class="pn">' + e.n + '</span><span class="pb"><span class="pa">' + e.action + '</span> ' + t + (e.value ? ' = “' + esc(e.value) + '”' : '') + (e.platform !== 'both' && e.platform !== 'all' ? ' <span class="plat">' + esc(NAME[e.platform] || e.platform) + '</span>' : '') + '<span class="exp">' + esc(e.expect) + '</span></span>';
       path.appendChild(li);
     });
   }
@@ -470,8 +472,8 @@ button { font: inherit; color: inherit; }
   function select(i) { stop(); cur = i; group = null; mode(false); var f = FLOWS[i]; try { history.replaceState(null, '', '#' + f.flow + (f.edge ? '-' + f.edge : '')); } catch (e) {} nav(); goto(0); status('Ready. Press Play, or pick a step.'); }
 
   $('play').onclick = function () { if (timer) { stop('Paused.'); return; } if (at >= ns().length) goto(0); this.textContent = 'Pause'; step(); };
-  $('back').onclick = function () { stop(); goto(at - 1); status(at ? entry(ns()[at - 1], 'ios').expect : 'Start.'); };
-  $('fwd').onclick = function () { stop(); var n = ns()[at]; if (n !== undefined) { P.forEach(function (p) { var e = entry(n, p); if (e) touch(p, e); }); setTimeout(function () { goto(at + 1); }, 300); status(entry(n, 'ios').expect); } };
+  $('back').onclick = function () { stop(); goto(at - 1); status(at ? entry(ns()[at - 1], P[P.length - 1]).expect : 'Start.'); };
+  $('fwd').onclick = function () { stop(); var n = ns()[at]; if (n !== undefined) { P.forEach(function (p) { var e = entry(n, p); if (e) touch(p, e); }); setTimeout(function () { goto(at + 1); }, 300); status(entry(n, P[P.length - 1]).expect); } };
   $('restart').onclick = function () { stop('Ready. Press Play, or pick a step.'); goto(0); };
   function seg(id, fn) { [].forEach.call($(id).children, function (b) { b.onclick = function () { [].forEach.call($(id).children, function (x) { x.setAttribute('aria-pressed', x === b); }); fn(b.dataset.v); }; }); }
   seg('speed', function (v) { speed = +v; });
