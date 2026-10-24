@@ -1,0 +1,26 @@
+{
+ "flow": "complete-task",
+ "given": "Signed in, one task “Buy milk”.",
+ "steps": [
+  {
+   "n": 1,
+   "platform": "both",
+   "action": "assert",
+   "target": {
+    "text": "Buy milk"
+   },
+   "expect": "“Buy milk” with an empty checkbox.",
+   "step": "home"
+  },
+  {
+   "n": 2,
+   "platform": "both",
+   "action": "tap",
+   "target": {
+    "id": "task.check"
+   },
+   "expect": "The box fills green and the title is crossed out.",
+   "step": "done"
+  }
+ ]
+}

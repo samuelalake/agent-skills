@@ -1,0 +1,482 @@
+<title>Review Pages Example</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Review pages pattern 1.0. The chrome is the flow board's: Primer tokens and components, light and dark.
+   Layout: header | sidebar (nested flows) | main (crumbs, title, controls, one card per platform) | rail (about this flow, steps, expected path). */
+/* Layout: Primer run page. Header (title, status) over a split view: NavList of flows with nested
+   sub-flows on the left, the selected flow on the right with platform cards side by side and an "About" rail. */
+:root {
+  --canvas: #ffffff; --canvas-subtle: #f6f8fa; --fg: #1f2328; --fg-muted: #59636e;
+  --border: #d1d9e0; --border-muted: #d1d9e0b3; --accent: #0969da; --selected: #818b981f;
+  --success: #1a7f37; --success-bg: #dafbe1; --danger: #d1242f; --danger-bg: #ffebe9; --danger-border: #ff818266;
+  --attention: #9a6700; --attention-bg: #fff8c5; --neutral: #59636e; --neutral-bg: #eff2f5; --player: #1f2328;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --canvas: #0d1117; --canvas-subtle: #151b23; --fg: #f0f6fc; --fg-muted: #9198a1;
+  --border: #3d444d; --border-muted: #3d444db3; --accent: #4493f8; --selected: #656c7633;
+  --success: #3fb950; --success-bg: #2ea04326; --danger: #f85149; --danger-bg: #f8514919; --danger-border: #f8514966;
+  --attention: #d29922; --attention-bg: #bb800926; --neutral: #9198a1; --neutral-bg: #212830; --player: #010409; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --canvas: #0d1117; --canvas-subtle: #151b23; --fg: #f0f6fc; --fg-muted: #9198a1;
+  --border: #3d444d; --border-muted: #3d444db3; --accent: #4493f8; --selected: #656c7633;
+  --success: #3fb950; --success-bg: #2ea04326; --danger: #f85149; --danger-bg: #f8514919; --danger-border: #f8514966;
+  --attention: #d29922; --attention-bg: #bb800926; --neutral: #9198a1; --neutral-bg: #212830; --player: #010409; color-scheme: dark }
+body { background: var(--canvas); color: var(--fg); font: 14px/1.5 var(--font);
+  margin: 0; padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px); }
+a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.muted { color: var(--fg-muted); } .mono { font-family: var(--mono); font-size: 12px; }
+.ico { width: 16px; height: 16px; flex: none; display: inline-block; vertical-align: text-bottom; }
+.ico.pass { color: var(--success); } .ico.fail { color: var(--danger); } .ico.none { color: var(--neutral); } .ico.skipped { color: var(--attention); } .ico.partial { color: var(--attention); }
+.wrap { min-height: 100vh; display: flex; flex-direction: column; }
+.top { padding: 20px 24px 0; border-bottom: 1px solid var(--border); }
+
+.crumbs { font-size: 14px; color: var(--fg-muted); margin-bottom: 12px; }
+.head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.head .big { width: 32px; height: 32px; }
+.head h1 { margin: 0; font-size: 26px; font-weight: 600; min-width: 0; }
+.appicon { width: 32px; height: 32px; border-radius: 8px; box-shadow: 0 0 0 1px var(--border); }
+.btn { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas-subtle); color: var(--fg); font-weight: 500; font-size: 14px; white-space: nowrap; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; gap: 6px; }
+.btn:hover { text-decoration: none; background: var(--selected); }
+.meta { margin: 8px 0 16px; color: var(--fg-muted); }
+
+.split { flex: 1; display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 0; }
+.side { border-right: 1px solid var(--border); padding: 16px 16px 24px; }
+.side-h { display: flex; justify-content: space-between; align-items: center; margin: 0 0 10px 8px; font-weight: 600; }
+.side-h span { font-weight: 400; font-size: 12px; color: var(--fg-muted); }
+.fmenu { position: relative; }
+.fbtn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas-subtle); color: var(--fg); font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+.fbtn:hover { background: var(--selected); }
+.fbtn .ico { width: 14px; height: 14px; }
+.fbtn .caret { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid currentColor; }
+.flist { position: absolute; right: 0; top: 32px; z-index: 10; min-width: 200px; margin: 0; padding: 6px; list-style: none; background: var(--canvas); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 24px rgba(140,149,159,.2); }
+.flist[hidden] { display: none; }
+.fopt { width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--fg); font: inherit; font-size: 14px; font-weight: 400; cursor: pointer; text-align: left; }
+.fopt:hover, .fopt:focus-visible { background: var(--selected); outline: none; }
+.fopt .ico { width: 16px; height: 16px; flex: none; }
+.fopt .lbl { flex: 1; white-space: nowrap; }
+.fopt .ctr { min-width: 22px; padding: 0 7px; border-radius: 2em; background: var(--neutral-bg); font-size: 12px; font-weight: 500; line-height: 20px; text-align: center; }
+.fopt[aria-checked="true"] { font-weight: 600; }
+.fopt .chk { width: 16px; flex: none; color: var(--fg); text-align: center; }
+.nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.nav ul { list-style: none; margin: 2px 0 4px 32px; padding: 0 0 0 4px; border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+.it { width: 100%; display: flex; align-items: center; gap: 8px; text-align: left; background: none; border: 0; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+.it:hover { background: var(--selected); }
+.it[aria-current="true"] { background: var(--selected); font-weight: 600; }
+.it .chev { width: 16px; height: 16px; color: var(--fg-muted); flex: none; transition: transform .15s; }
+.it .chev.open { transform: rotate(90deg); } .it .chev.blank { visibility: hidden; }
+.it .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav ul .it { padding-left: 12px; color: var(--fg-muted); }
+.nav ul .it:hover, .nav ul .it[aria-current="true"] { color: var(--fg); }
+.nav ul .it[aria-current="true"] { font-weight: 400; }
+.it.parent-open { font-weight: 600; }
+
+.main { padding: 16px 24px 40px; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 24px; align-items: start; }
+.content { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.back { display: none; align-self: flex-start; }
+.d-crumbs { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--fg-muted); }
+.d-crumbs .cur { color: var(--fg); }
+.d-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.d-title .tally { color: var(--fg-muted); font-size: 14px; }
+.d-title h2 { margin: 0; font-size: 22px; font-weight: 600; }
+.label { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; line-height: 20px; padding: 0 8px; border-radius: 2em; border: 1px solid; white-space: nowrap; }
+.label.fail { color: var(--danger); border-color: var(--danger); } .label.pass { color: var(--success); border-color: var(--success); }
+.label.none { color: var(--fg-muted); border-color: var(--border); } .label.skipped { color: var(--attention); border-color: var(--attention); }
+.flash { display: flex; gap: 10px; padding: 12px 16px; border: 1px solid var(--danger-border); background: var(--danger-bg); border-radius: 6px; }
+.flash.ok { border-color: var(--success); background: var(--success-bg); }
+.flash strong { display: block; } .flash p { margin: 2px 0 0; }
+.scn-list { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 6px; }
+.scn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 0; border-top: 1px solid var(--border); background: none; cursor: pointer; text-align: left; font-size: 14px; }
+.scn:first-child { border-top: 0; } .scn:hover { background: var(--selected); }
+.scn .t { flex: 1; font-weight: 600; } .scn .tally { color: var(--fg-muted); font-size: 13px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.tab { border: 0; background: none; padding: 8px 12px; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { border-bottom-color: #fd8c73; font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.card-h { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--canvas-subtle); border-bottom: 1px solid var(--border); font-weight: 600; }
+.card-h .label { margin-left: auto; padding-left: 4px; }
+.label .ico { width: 14px; height: 14px; }
+.player { display: flex; justify-content: center; padding: 20px 16px; background: var(--canvas-subtle); border-bottom: 1px solid var(--border); }
+.phone { position: relative; height: 368px; aspect-ratio: 9 / 19.5; box-shadow: 0 0 0 4px #1f2328; border-radius: 14px; margin: 4px; overflow: hidden; background: #ffffff; display: flex; align-items: center; justify-content: center; }
+.phone video, .phone img { width: 100%; height: 100%; object-fit: contain; display: block; background: #ffffff; }
+.phone .empty { color: #59636e; text-align: center; padding: 16px; font-size: 13px; }
+.phone .empty strong { display: block; color: #1f2328; font-size: 14px; margin-bottom: 2px; }
+.play { position: absolute; inset: 0; margin: auto; width: 56px; height: 56px; border-radius: 50%; border: 2px solid #ffffff; background: rgba(1,4,9,.55); cursor: pointer; }
+.play::after { content: ""; position: absolute; left: 21px; top: 16px; border-style: solid; border-width: 10px 0 10px 16px; border-color: transparent transparent transparent #ffffff; }
+.play:hover { background: var(--accent); border-color: var(--accent); }
+.card-b { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; }
+.card-b strong { font-size: 14px; }
+.card-b p { margin: 0; color: var(--fg-muted); }
+.card-b .links { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; font-size: 13px; }
+.next h3, .rail h3 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.next ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.rail { padding-left: 8px; display: flex; flex-direction: column; gap: 14px; font-size: 13px; }
+.rail dt { color: var(--fg-muted); font-size: 12px; } .rail dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.rail dl { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.rail-next { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.prs { display: flex; flex-direction: column; gap: 2px; }
+.prrow { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.plat { font-size: 12px; color: var(--fg-muted); }
+.rail .pr { white-space: nowrap; display: inline-block; font-family: var(--mono); font-size: 12px; margin-right: 6px; }
+.nonote { color: var(--fg-muted); }
+
+@media (max-width: 1020px) { .main { grid-template-columns: 1fr; } .rail { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 16px; } }
+@media (max-width: 760px) {
+  .split { grid-template-columns: 1fr; }
+  .side { border-right: 0; }
+  .main { padding: 16px 16px 40px; }
+  .top { padding: 16px 16px 0; }
+  .split.detail .side { display: none; } .split:not(.detail) .main { display: none; }
+  .back { display: inline-flex; }
+  .cards { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .it .chev { transition: none; } }
+
+/* Prototype additions on the board's Primer tokens */
+*, *::before, *::after { box-sizing: border-box; }
+.side-g { margin: 18px 0 6px 8px; font-weight: 600; font-size: 12px; color: var(--fg-muted); text-transform: none; }
+.it .np { font-size: 12px; color: var(--fg-muted); white-space: nowrap; }
+.it.off .t { color: var(--fg-muted); }
+.ico.proto { color: var(--accent); } .ico.spec { color: var(--fg-muted); }
+.controls { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas-subtle); }
+.crow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn { cursor: pointer; }
+.btn.primary { background: #1f883d; border-color: rgba(31,35,40,.15); color: #fff; min-width: 74px; justify-content: center; }
+.btn.primary:hover { background: #1c8139; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; border-left: 1px solid var(--border); background: var(--canvas); height: 26px; padding: 0 10px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--fg); }
+.seg button:first-child { border-left: 0; }
+.seg button[aria-pressed="true"] { background: var(--selected); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); }
+.chkl { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+.status { font-size: 12px; color: var(--fg-muted); flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; }
+.pbar2 { font-size: 12px; }
+.pbar2 select { font: inherit; font-size: 12px; height: 26px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--fg); max-width: 100%; }
+.pbar2 label { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+.pbtn { display: inline-flex; align-items: center; height: 26px; padding: 0 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--fg); font-size: 12px; font-weight: 500; cursor: pointer; }
+.pbtn:hover { background: var(--selected); }
+.cards.one { grid-template-columns: minmax(0, 1fr); }
+.card[hidden] { display: none; }
+.card-h .label { font-weight: 400; }
+.phone { height: auto; aspect-ratio: auto; background: #fff; display: block; align-items: initial; }
+.scaler { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.touch { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(31,35,40,.32); border: 2px solid rgba(255,255,255,.95); box-shadow: 0 0 0 1px rgba(31,35,40,.25); pointer-events: none; z-index: 100; animation: touchfade 1s ease-out forwards; }
+@keyframes touchfade { 0% { opacity: 0; transform: scale(.55); } 12% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
+.pnext { min-height: 20px; font-size: 13px; }
+.notes .card-b p { font-size: 13px; }
+.rail dt a.dl { margin-left: 6px; font-size: 12px; }
+.rail-steps, .rail-path { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; counter-reset: st; }
+.rail-steps li { counter-increment: st; position: relative; padding: 5px 6px 5px 28px; border-radius: 6px; cursor: pointer; }
+.rail-steps li::before { content: counter(st); position: absolute; left: 4px; top: 6px; width: 18px; height: 18px; border-radius: 9px; background: var(--neutral-bg); color: var(--fg-muted); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+.rail-steps li:hover { background: var(--selected); }
+.rail-steps li.on { background: var(--attention-bg); }
+.rail-steps li.on::before { background: var(--attention); color: #fff; }
+.rail-steps li.done::before { background: var(--success-bg); color: var(--success); }
+.rail-steps .sn { display: block; font-weight: 600; color: var(--fg); }
+.rail-steps .see, .rail-steps .alt { display: block; color: var(--fg-muted); font-size: 12px; }
+.rail-steps .alt { color: var(--attention); }
+.rail code, .spec code, .rail-path code { font-family: var(--mono); font-size: 11px; background: var(--neutral-bg); padding: 0 4px; border-radius: 4px; overflow-wrap: anywhere; }
+.rail-path li { display: flex; gap: 6px; padding: 4px 6px; border-radius: 6px; font-size: 12px; }
+.rail-path li.on { background: var(--attention-bg); }
+.rail-path .pn { font-family: var(--mono); color: var(--fg-muted); min-width: 18px; text-align: right; }
+.rail-path .pb { min-width: 0; overflow-wrap: anywhere; }
+.rail-path .pa { font-weight: 600; }
+.rail-path .exp, .rail-path .given { display: block; color: var(--fg-muted); }
+.rail-path .given { color: var(--attention); }
+.lbl-edge, .lbl-unc { font-size: 11px; border: 1px solid var(--attention); color: var(--attention); border-radius: 2em; padding: 0 6px; white-space: nowrap; }
+.lbl-unc { border-color: var(--danger); color: var(--danger); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.dchip { font-size: 12px; line-height: 20px; padding: 0 8px; border-radius: 2em; background: var(--neutral-bg); color: var(--fg); }
+.rail .rail-next li { overflow-wrap: anywhere; }
+@media (min-width: 1021px) { .rail { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; } }
+.main { grid-template-columns: minmax(0, 1fr) 300px; }
+@media (max-width: 1020px) { .main { grid-template-columns: 1fr; } }
+/* The sample app under test ("Tasks"). Its own look, not the page chrome. */
+.screen { position: relative; background: #ffffff; color: #1f2328; font-family: var(--font); overflow: hidden; }
+.screen.ios { width: 393px; height: 852px; } .screen.android { width: 412px; height: 915px; }
+.sbar { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; font-size: 16px; font-weight: 600; }
+.android .sbar { height: 36px; padding: 0 20px; font-size: 14px; }
+.island { width: 120px; height: 34px; border-radius: 17px; background: #000; }
+.punch { width: 12px; height: 12px; border-radius: 6px; background: #000; }
+.s { display: flex; flex-direction: column; gap: 16px; padding: 12px 24px 40px; height: calc(100% - 54px); }
+.android .s { height: calc(100% - 36px); }
+.s h3 { font-size: 34px; margin: 16px 0 0; } .android .s h3 { font-size: 28px; }
+.s p { margin: 0; color: #59636e; font-size: 17px; }
+.grow { flex: 1; }
+.abtn { display: block; width: 100%; padding: 16px; border: 0; border-radius: 14px; background: #0969da; color: #fff; font: 600 17px var(--font); }
+.android .abtn { border-radius: 28px; }
+.field { border: 1px solid #d1d9e0; border-radius: 12px; padding: 14px 16px; font-size: 17px; min-height: 52px; }
+.field.empty { color: #59636e; }
+.bar { display: flex; align-items: center; justify-content: space-between; }
+.plus { font-size: 32px; color: #0969da; width: 44px; text-align: center; }
+.trow { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #d1d9e0; font-size: 17px; }
+.box { width: 24px; height: 24px; border: 2px solid #59636e; border-radius: 6px; flex: none; display: grid; place-items: center; color: #fff; font-size: 16px; }
+.trow.done .box { background: #1a7f37; border-color: #1a7f37; } .trow.done .tt { text-decoration: line-through; color: #59636e; }
+.fab { position: absolute; right: 24px; bottom: 40px; width: 56px; height: 56px; border-radius: 16px; background: #0969da; color: #fff; font-size: 30px; display: grid; place-items: center; }
+.card .player { flex: 1; align-items: center; }
+.toast { position: absolute; left: 24px; right: 24px; bottom: 120px; background: #1f2328; color: #fff; padding: 14px 16px; border-radius: 12px; font-size: 16px; }
+
+/* 1.1: one media box with its player bar, neutral selection, equal wells, tighter nesting */
+.d-title { justify-content: space-between; }
+.d-title .tl { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+.media { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.media .cards { gap: 0; }
+.media .card { border: 0; border-radius: 0; }
+.media .card + .card { border-left: 1px solid var(--border); }
+.media .cards.one .card { border-left: 0; }
+.card-h .dim { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--fg-muted); }
+.media .player { border-bottom: 0; }
+.pbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--border); }
+.pbar .ib { width: 28px; padding: 0; justify-content: center; }
+.sdots { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.sdot { width: 10px; height: 10px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: var(--neutral-bg); box-shadow: inset 0 0 0 1px var(--border); }
+.sdot.done { background: var(--fg-muted); box-shadow: none; }
+.sdot.on { background: var(--accent); box-shadow: 0 0 0 2px var(--canvas), 0 0 0 3px var(--accent); }
+.pbar .status { flex: 1 1 180px; }
+.rail-steps li.on { background: var(--selected); }
+.rail-steps li.on::before { background: var(--accent); color: #fff; }
+.rail-path li.on { background: var(--selected); }
+.nav ul { margin: 2px 0 4px 15px; padding: 0; }
+.nav ul .it { padding-left: 16px; }
+[hidden] { display: none !important; }
+/* 1.2: the sidebar scrolls on its own under a fixed "Flows" row; crumbs stay muted; the status line has its own row */
+.side { position: sticky; top: 0; align-self: start; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+.side .nav { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 24px; }
+.d-crumbs a { color: var(--fg-muted); text-decoration: underline; text-underline-offset: 2px; }
+.d-crumbs a:hover { color: var(--fg); }
+.pbar .status { flex: 1 0 100%; order: 10; }
+@media (max-width: 760px) { .side { position: static; height: auto; overflow: visible; } }
+.ferr { color: #d1242f; font-size: 15px; margin-top: -8px; }
+</style>
+
+<div class="wrap">
+ <div class="top">
+  <div class="head">
+    <svg class="appicon" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0969da"/><path d="M9 16.5l4.5 4.5L23 11.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>Tasks flow prototypes</h1>
+  </div>
+  <div class="meta">Last updated 24 Oct 2026, 15:05 UTC</div>
+ </div>
+ <div class="split" id="split">
+  <nav class="side" aria-label="Flows">
+   <div class="side-h">Flows <button class="fbtn" type="button" aria-label="Filter: all flows">All <span class="caret"></span></button></div>
+   <ul class="nav" id="nav"></ul>
+  </nav>
+  <section class="main" id="main" aria-live="polite">
+   <div class="content">
+    <div class="d-crumbs" id="crumbs"></div>
+    <div class="d-title"><div class="tl"><h2 id="ftitle"></h2><span class="tally" id="ftally"></span></div>
+     <span class="seg" id="show"><button type="button" data-v="both" aria-pressed="true">Side by side</button><button type="button" data-v="android" aria-pressed="false">Android</button><button type="button" data-v="ios" aria-pressed="false">iOS</button></span></div>
+    <div class="scn-list" id="glist" hidden></div>
+    <div class="media" id="media">
+     <div class="cards" id="cards">
+      <div class="card" data-p="android"><div class="card-h">Android <span class="dim">412 × 915 dp</span></div><div class="player"><div class="phone" style="width:173px;height:384px"><div class="scaler" style="transform:scale(.4197)"><div class="screen android" id="scr-android"></div></div></div></div></div>
+      <div class="card" data-p="ios"><div class="card-h">iOS <span class="dim">393 × 852 pt</span></div><div class="player"><div class="phone" style="width:177px;height:384px"><div class="scaler" style="transform:scale(.4507)"><div class="screen ios" id="scr-ios"></div></div></div></div></div>
+     </div>
+     <div class="pbar">
+      <button class="btn btn-sm primary" id="play" type="button">Play</button>
+      <button class="btn btn-sm ib" id="back" type="button" aria-label="Back one step">‹</button>
+      <button class="btn btn-sm ib" id="fwd" type="button" aria-label="Forward one step">›</button>
+      <button class="btn btn-sm ib" id="restart" type="button" aria-label="Restart">↺</button>
+      <span class="seg" id="speed"><button type="button" data-v="0.5" aria-pressed="false">0.5×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button></span>
+      <span class="sdots" id="dots"></span>
+      <span class="status" id="status" role="status"></span>
+     </div>
+    </div>
+   </div>
+   <aside class="rail" aria-label="About this flow">
+    <h3 id="rh">About this flow</h3>
+    <dl>
+     <div><dt>Goal</dt><dd id="goal"></dd></div>
+     <div id="rs"><dt>Steps</dt><dd><ol class="rail-steps" id="steps"></ol></dd></div>
+     <div id="rp"><dt>Expected path <span class="muted">paths/<span id="pname"></span>.json</span></dt><dd><ol class="rail-path" id="path"></ol></dd></div>
+    </dl>
+   </aside>
+  </section>
+ </div>
+</div>
+
+<!-- The flows are data. paths/<flow>.json is extracted from this block (edge cases merge into their flow's file, tagged "edge"). -->
+<script type="application/json" id="flows">
+[
+ {"flow":"sign-in","group":"Sign in","name":"With email","goal":"A new person signs in with email and lands on an empty Tasks list.","names":{"welcome":"Welcome","email":"Email","home":"Tasks"},"steps":[
+  {"n":1,"platform":"both","action":"assert","target":{"id":"welcome"},"expect":"Welcome with “Continue with email”.","step":"welcome"},
+  {"n":2,"platform":"both","action":"tap","target":{"id":"welcome.email"},"expect":"The email screen opens with an empty field.","step":"email"},
+  {"n":3,"platform":"both","action":"type","target":{"id":"signin.field"},"value":"sam@example.com","expect":"The address appears in the field.","step":"email"},
+  {"n":4,"platform":"both","action":"tap","target":{"id":"signin.continue"},"expect":"Tasks opens with an empty list and an add control.","step":"home"}
+ ]},
+ {"flow":"sign-in","edge":"invalid-email","group":"Sign in","name":"Invalid email","goal":"An incomplete address is caught on the email screen, inline under the field.","names":{"welcome":"Welcome","email":"Email","error":"Error"},"steps":[
+  {"n":1,"platform":"both","action":"tap","target":{"id":"welcome.email"},"expect":"The email screen opens.","step":"email","edge":"invalid-email"},
+  {"n":2,"platform":"both","action":"type","target":{"id":"signin.field"},"value":"sam@example","expect":"The address appears in the field.","step":"email","edge":"invalid-email"},
+  {"n":3,"platform":"both","action":"tap","target":{"id":"signin.continue"},"expect":"“Enter a full email address.” shows under the field; the screen stays.","step":"error","edge":"invalid-email"}
+ ]},
+ {"flow":"add-task","group":"Tasks","name":"Add a task","given":"Signed in, empty list.","goal":"Adding a task puts it at the top of the list and confirms with a toast.","names":{"home":"Tasks","sheet":"New task","saved":"Added"},"steps":[
+  {"n":1,"platform":"both","action":"assert","target":{"id":"home"},"expect":"Tasks with an empty list.","step":"home"},
+  {"n":2,"platform":"ios","action":"tap","target":{"id":"home.add"},"expect":"The New task sheet opens with the field focused.","step":"sheet"},
+  {"n":2,"platform":"android","action":"tap","target":{"id":"home.fab"},"expect":"The New task sheet opens with the field focused.","step":"sheet"},
+  {"n":3,"platform":"both","action":"type","target":{"id":"task.field"},"value":"Buy milk","expect":"“Buy milk” appears in the field.","step":"sheet"},
+  {"n":4,"platform":"both","action":"tap","target":{"id":"task.save"},"expect":"The sheet closes and a toast says “Task added”.","step":"saved"},
+  {"n":5,"platform":"both","action":"assert","target":{"text":"Buy milk"},"expect":"“Buy milk” is the first row.","step":"saved"}
+ ]},
+ {"flow":"complete-task","group":"Tasks","name":"Complete a task","given":"Signed in, one task “Buy milk”.","goal":"Ticking a task crosses it out and keeps it in the list.","names":{"home":"Tasks","done":"Done"},"steps":[
+  {"n":1,"platform":"both","action":"assert","target":{"text":"Buy milk"},"expect":"“Buy milk” with an empty checkbox.","step":"home"},
+  {"n":2,"platform":"both","action":"tap","target":{"id":"task.check"},"expect":"The box fills green and the title is crossed out.","step":"done"}
+ ]}
+]
+</script>
+
+<script>
+(function () {
+  var FLOWS = JSON.parse(document.getElementById('flows').textContent);
+  var NOT = [{ name: 'Settings' }];   // listed, not prototyped yet
+  var GROUPS = { 'Sign in': 'Sign in or create an account, including what happens when the email is wrong.', Tasks: 'Add tasks and tick them off.' };
+  var group = null;   // the parent page shown, or null when a flow is shown
+  var P = ['android', 'ios'], cur = 0, at = 0, timer = null, speed = 1, open = { Tasks: true, 'Sign in': true };
+  var ICON = {
+    proto: '<svg class="ico proto" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.6 5.4v5.2L10.6 8z" fill="currentColor"/></svg>',
+    chev: function (o) { return '<svg class="chev' + (o ? ' open' : '') + '" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+  };
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  // The sample app: one small state machine both phones share.
+  function fresh(f) {
+    if (f.flow === 'sign-in') return { screen: 'welcome', email: '', tasks: [] };
+    if (f.flow === 'complete-task') return { screen: 'home', tasks: [{ t: 'Buy milk', done: false }] };
+    return { screen: 'home', tasks: [] };
+  }
+  function apply(s, e) {
+    var id = e.target.id; s.toast = null;
+    if (e.action === 'tap') {
+      if (id === 'welcome.email') s.screen = 'email';
+      else if (id === 'signin.continue') { if (/@[^.]+\.[^.]+/.test(s.email)) s.screen = 'home'; else s.err = 'Enter a full email address.'; }
+      else if (id === 'home.add' || id === 'home.fab') { s.screen = 'add'; s.draft = ''; }
+      else if (id === 'task.save') { s.tasks = [{ t: s.draft, done: false }].concat(s.tasks); s.screen = 'home'; s.toast = 'Task added'; }
+      else if (id === 'task.check') s.tasks[0].done = true;
+    } else if (e.action === 'type') { if (id === 'signin.field') { s.email = e.value; s.err = null; } else s.draft = e.value; }
+  }
+  function view(p, s) {
+    var ios = p === 'ios', bar = '<div class="sbar"><span>9:41</span>' + (ios ? '<span class="island"></span>' : '<span class="punch"></span>') + '<span>●●●</span></div>';
+    if (s.screen === 'welcome') return bar + '<div class="s" data-id="welcome"><h3>Tasks</h3><p>Everything you need to do, in one list.</p><div class="grow"></div><button class="abtn" data-id="welcome.email">Continue with email</button></div>';
+    if (s.screen === 'email') return bar + '<div class="s"><h3>Your email</h3><div class="field' + (s.email ? '' : ' empty') + '" data-id="signin.field">' + esc(s.email || 'name@example.com') + '</div>' + (s.err ? '<div class="ferr">' + esc(s.err) + '</div>' : '') + '<div class="grow"></div><button class="abtn" data-id="signin.continue">Continue</button></div>';
+    if (s.screen === 'add') return bar + '<div class="s"><h3>New task</h3><div class="field' + (s.draft ? '' : ' empty') + '" data-id="task.field">' + esc(s.draft || 'What needs doing?') + '</div><div class="grow"></div><button class="abtn" data-id="task.save">Save</button></div>';
+    var rows = s.tasks.length ? s.tasks.map(function (t, i) { return '<div class="trow' + (t.done ? ' done' : '') + '"><span class="box"' + (i ? '' : ' data-id="task.check"') + '>' + (t.done ? '✓' : '') + '</span><span class="tt">' + esc(t.t) + '</span></div>'; }).join('') : '<p>No tasks yet.</p>';
+    return bar + '<div class="s" data-id="home"><div class="bar"><h3>Tasks</h3>' + (ios ? '<span class="plus" data-id="home.add">+</span>' : '') + '</div>' + rows + '</div>' + (ios ? '' : '<div class="fab" data-id="home.fab">+</div>') + (s.toast ? '<div class="toast">' + s.toast + '</div>' : '');
+  }
+
+  function F() { return FLOWS[cur]; }
+  function ns() { return F().steps.map(function (e) { return e.n; }).filter(function (n, i, a) { return a.indexOf(n) === i; }); }
+  function entry(n, p) { return F().steps.filter(function (e) { return e.n === n && (e.platform === 'both' || e.platform === p); })[0]; }
+  var state = {};
+  function goto(k) {
+    at = Math.max(0, Math.min(k, ns().length));
+    P.forEach(function (p) { var s = fresh(F()); ns().slice(0, at).forEach(function (n) { var e = entry(n, p); if (e) apply(s, e); }); state[p] = s; $('scr-' + p).innerHTML = view(p, s); });
+    rail();
+  }
+  function touch(p, e) {
+    var scr = $('scr-' + p), el = e.target.id && scr.querySelector('[data-id="' + e.target.id + '"]');
+    if (!el || e.action === 'assert') return;
+    var x = 0, y = 0, n = el; while (n && n !== scr) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    var d = document.createElement('div'); d.className = 'touch';
+    d.style.left = (x + el.offsetWidth / 2) + 'px'; d.style.top = (y + el.offsetHeight / 2) + 'px';
+    scr.appendChild(d); setTimeout(function () { d.remove(); }, 1100);
+  }
+  function step() {
+    var list = ns();
+    if (at >= list.length) { stop('Finished.'); return; }
+    var n = list[at];
+    P.forEach(function (p) { var e = entry(n, p); if (e) touch(p, e); });
+    status(entry(n, 'ios').expect);
+    setTimeout(function () { goto(at + 1); }, 450 / speed);
+    timer = setTimeout(step, 1500 / speed);
+  }
+  function stop(msg) { clearTimeout(timer); timer = null; $('play').textContent = 'Play'; if (msg) status(msg); }
+  function status(t) { $('status').textContent = t; }
+
+  function rail() {
+    var f = F(), list = ns(), parent = f.edge ? FLOWS.filter(function (x) { return x.flow === f.flow && !x.edge; })[0] : null;
+    $('crumbs').innerHTML = '<span>Flows</span><span>/</span>' + (f.group ? '<a href="#" data-g="' + esc(f.group) + '">' + esc(f.group) + '</a><span>/</span>' : '') + '<span class="cur">' + esc(f.name) + '</span>';
+    var gl = $('crumbs').querySelector('[data-g]'); if (gl) gl.onclick = function (ev) { ev.preventDefault(); showGroup(f.group); };
+    $('ftitle').textContent = f.name;
+    $('ftally').textContent = (f.edge ? 'Edge case · ' : '') + list.length + ' steps';
+    $('goal').textContent = f.goal;
+    var dots = $('dots'); dots.innerHTML = '';
+    list.forEach(function (n, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'sdot' + (i < at - 1 ? ' done' : i === at - 1 ? ' on' : '');
+      b.setAttribute('aria-label', 'Step ' + n); b.onclick = function () { stop(); goto(i + 1); status(entry(n, 'ios').expect); };
+      dots.appendChild(b);
+    });
+    var seen = {}, steps = $('steps'); steps.innerHTML = '';
+    list.forEach(function (n) {
+      var e = entry(n, 'ios'); if (seen[e.step]) return; seen[e.step] = true;
+      var idx = list.map(function (m) { return entry(m, 'ios').step; }), first = idx.indexOf(e.step), last = idx.lastIndexOf(e.step);
+      var li = document.createElement('li');
+      li.className = at - 1 >= first && at - 1 <= last ? 'on' : (at - 1 > last ? 'done' : '');
+      li.innerHTML = '<span class="sn">' + esc(f.names[e.step]) + '</span><span class="see">' + esc(entry(list[last], 'ios').expect) + '</span>';
+      li.onclick = function () { stop(); goto(first + 1); status('Jumped to “' + f.names[e.step] + '”.'); };
+      steps.appendChild(li);
+    });
+    $('pname').textContent = f.flow;
+    var path = $('path'); path.innerHTML = '';
+    if (f.given) path.innerHTML = '<li><span class="pn"></span><span class="pb"><span class="given">Given: ' + esc(f.given) + '</span></span></li>';
+    f.steps.forEach(function (e) {
+      var li = document.createElement('li'); if (e.n === list[at - 1]) li.className = 'on';
+      var t = e.target.id ? '<code>' + esc(e.target.id) + '</code>' : '“' + esc(e.target.text) + '”';
+      li.innerHTML = '<span class="pn">' + e.n + '</span><span class="pb"><span class="pa">' + e.action + '</span> ' + t + (e.value ? ' = “' + esc(e.value) + '”' : '') + (e.platform !== 'both' ? ' <span class="plat">' + (e.platform === 'ios' ? 'iOS' : 'Android') + '</span>' : '') + '<span class="exp">' + esc(e.expect) + '</span></span>';
+      path.appendChild(li);
+    });
+  }
+  function row(html, attrs) { var b = document.createElement('button'); b.type = 'button'; b.className = 'it'; b.innerHTML = html; for (var k in attrs || {}) b.setAttribute(k, attrs[k]); return b; }
+  function li(child) { var l = document.createElement('li'); l.appendChild(child); return l; }
+  function sub(key, parentLi) { var u = document.createElement('ul'); u.hidden = !open[key]; parentLi.appendChild(u); return u; }
+  function nav() {
+    var ul = $('nav'); ul.innerHTML = ''; var groups = {};
+    FLOWS.forEach(function (f, i) {
+      var b = row((f.group ? '' : '<span class="chev blank"></span>') + '<span class="t">' + esc(f.name) + '</span>' + ICON.proto, { 'aria-current': group === null && i === cur });
+      b.onclick = function () { select(i); };
+      var item = li(b);
+      if (!f.group) { ul.appendChild(item); return; }
+      if (!groups[f.group]) {
+        var g = f.group, gb = row(ICON.chev(open[g]) + '<span class="t">' + esc(g) + '</span>', { 'aria-expanded': !!open[g], 'aria-current': group === g });
+        if (open[g] && (group === g || F().group === g)) gb.classList.add('parent-open');
+        gb.onclick = function () { if (group === g) { open[g] = !open[g]; nav(); return; } open[g] = true; showGroup(g); };
+        var gl = li(gb); ul.appendChild(gl); groups[g] = sub(g, gl);
+      }
+      groups[f.group].appendChild(item);
+    });
+    NOT.forEach(function (x) { ul.appendChild(li(row('<span class="chev blank"></span><span class="t">' + esc(x.name) + '</span><span class="np">Not prototyped</span>', { disabled: '', class: 'it off' }))); });
+  }
+  function mode(isGroup) { $('rh').textContent = isGroup ? 'About this group' : 'About this flow'; $('glist').hidden = !isGroup; $('media').hidden = isGroup; $('show').hidden = isGroup; $('rs').hidden = isGroup; $('rp').hidden = isGroup; }
+  function showGroup(g) {
+    stop(); group = g; mode(true);
+    try { history.replaceState(null, '', '#' + g.toLowerCase().replace(/\s+/g, '-')); } catch (e) {}
+    var kids = []; FLOWS.forEach(function (f, i) { if (f.group === g) kids.push(i); });
+    $('crumbs').innerHTML = '<span>Flows</span><span>/</span><span class="cur">' + esc(g) + '</span>';
+    $('ftitle').textContent = g; $('ftally').textContent = kids.length + (kids.length === 1 ? ' flow' : ' flows');
+    $('goal').textContent = GROUPS[g] || '';
+    var list = $('glist'); list.innerHTML = '';
+    kids.forEach(function (i) {
+      var f = FLOWS[i], n = f.steps.map(function (e) { return e.n; }).filter(function (x, j, a) { return a.indexOf(x) === j; }).length;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'scn';
+      b.innerHTML = ICON.proto + '<span class="t">' + esc(f.name) + '</span><span class="tally">' + (f.edge ? 'Edge case · ' : '') + n + ' steps</span>';
+      b.onclick = function () { select(i); }; list.appendChild(b);
+    });
+    nav();
+  }
+  function select(i) { stop(); cur = i; group = null; mode(false); var f = FLOWS[i]; try { history.replaceState(null, '', '#' + f.flow + (f.edge ? '-' + f.edge : '')); } catch (e) {} nav(); goto(0); status('Ready. Press Play, or pick a step.'); }
+
+  $('play').onclick = function () { if (timer) { stop('Paused.'); return; } if (at >= ns().length) goto(0); this.textContent = 'Pause'; step(); };
+  $('back').onclick = function () { stop(); goto(at - 1); status(at ? entry(ns()[at - 1], 'ios').expect : 'Start.'); };
+  $('fwd').onclick = function () { stop(); var n = ns()[at]; if (n !== undefined) { P.forEach(function (p) { var e = entry(n, p); if (e) touch(p, e); }); setTimeout(function () { goto(at + 1); }, 300); status(entry(n, 'ios').expect); } };
+  $('restart').onclick = function () { stop('Ready. Press Play, or pick a step.'); goto(0); };
+  function seg(id, fn) { [].forEach.call($(id).children, function (b) { b.onclick = function () { [].forEach.call($(id).children, function (x) { x.setAttribute('aria-pressed', x === b); }); fn(b.dataset.v); }; }); }
+  seg('speed', function (v) { speed = +v; });
+  seg('show', function (v) { [].forEach.call(document.querySelectorAll('.card[data-p]'), function (c) { c.hidden = v !== 'both' && c.dataset.p !== v; }); $('cards').classList.toggle('one', v !== 'both'); });
+  var start = 0, h = location.hash.slice(1), g0 = null; FLOWS.forEach(function (f, i) { if (f.flow + (f.edge ? '-' + f.edge : '') === h) start = i; if (f.group && f.group.toLowerCase().replace(/\s+/g, '-') === h) g0 = f.group; });
+  select(start); if (g0) showGroup(g0);
+})();
+</script>

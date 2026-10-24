@@ -131,6 +131,8 @@ The packet must make clear:
 If a material decision remains open, return the item to design rather than
 writing acceptance criteria that conceal the ambiguity.
 
+For user-facing flows, the approved contract can be published as flow prototypes with expected paths: see the `review-pages` skill.
+
 ## Handoff and review
 
 Builder implements the approved contract and may surface constraints or
